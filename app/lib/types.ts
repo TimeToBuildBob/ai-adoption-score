@@ -2,6 +2,8 @@ export type QuestionType = 'binary' | 'multiple' | 'slider' | 'scale';
 
 export type UserType = 'coder' | 'professional' | 'casual' | 'unknown';
 
+export type AnswerValue = string | number | boolean;
+
 export interface Question {
   id: string;
   text: string;
@@ -10,14 +12,14 @@ export interface Question {
   options?: string[];
   min?: number;
   max?: number;
-  skipIf?: (answers: Record<string, any>) => boolean;
-  showIf?: (answers: Record<string, any>) => boolean;
+  skipIf?: (answers: Record<string, AnswerValue>) => boolean;
+  showIf?: (answers: Record<string, AnswerValue>) => boolean;
   weight: number;
 }
 
 export interface Answer {
   questionId: string;
-  value: any;
+  value: AnswerValue;
   timestamp: Date;
 }
 
@@ -33,7 +35,7 @@ export interface Result {
   percentile: number;
   archetype: Archetype;
   categoryScores: CategoryScore[];
-  answers: Record<string, any>;
+  answers: Record<string, AnswerValue>;
   recommendations: string[];
 }
 

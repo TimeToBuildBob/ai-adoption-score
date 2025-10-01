@@ -5,7 +5,7 @@ import { Quiz } from './components/Quiz';
 import { Results } from './components/Results';
 import { Button } from './components/ui/button';
 import { calculateResults } from './lib/scoring';
-import { Result } from './lib/types';
+import { Result, AnswerValue } from './lib/types';
 import { Brain, Zap, Users, TrendingUp } from 'lucide-react';
 
 type AppState = 'landing' | 'quiz' | 'results';
@@ -27,7 +27,7 @@ export default function Home() {
     setState('quiz');
   };
 
-  const handleComplete = (answers: Record<string, any>) => {
+  const handleComplete = (answers: Record<string, AnswerValue>) => {
     const calculatedResult = calculateResults(answers);
     setResult(calculatedResult);
     setState('results');
@@ -60,10 +60,10 @@ export default function Home() {
         <div className="max-w-4xl mx-auto text-center space-y-8">
           <div className="space-y-4">
             <h1 className="text-6xl font-bold text-gray-900 tracking-tight">
-              What's Your AI Adoption Score?
+              What&apos;s Your AI Adoption Score?
             </h1>
             <p className="text-2xl text-gray-600">
-              Discover how deeply you've integrated AI into your life and work
+              Discover how deeply you&apos;ve integrated AI into your life and work
             </p>
           </div>
 

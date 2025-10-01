@@ -1,13 +1,13 @@
 'use client';
 
-import { Question } from '@/app/lib/types';
+import { Question, AnswerValue } from '@/app/lib/types';
 import { Button } from './ui/button';
 import { motion } from 'framer-motion';
 
 interface QuestionRendererProps {
   question: Question;
-  value: any;
-  onChange: (value: any, autoAdvance?: boolean) => void;
+  value: AnswerValue | undefined;
+  onChange: (value: AnswerValue, autoAdvance?: boolean) => void;
   onNext: () => void;
 }
 
@@ -85,7 +85,7 @@ export function QuestionRenderer({ question, value, onChange, onNext }: Question
               type="range"
               min={question.min || 0}
               max={question.max || 100}
-              value={value || question.min || 0}
+              value={typeof value === 'number' ? value : (question.min || 0)}
               onChange={(e) => onChange(Number(e.target.value))}
               className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
             />

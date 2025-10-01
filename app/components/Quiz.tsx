@@ -2,19 +2,19 @@
 
 import { useState, useMemo } from 'react';
 import { questions } from '@/app/lib/questions';
-import { Question } from '@/app/lib/types';
+import { AnswerValue } from '@/app/lib/types';
 import { QuestionRenderer } from './QuestionRenderer';
 import { Progress } from './ui/progress';
 import { Button } from './ui/button';
 import { ArrowLeft } from 'lucide-react';
 
 interface QuizProps {
-  onComplete: (answers: Record<string, any>) => void;
+  onComplete: (answers: Record<string, AnswerValue>) => void;
 }
 
 export function Quiz({ onComplete }: QuizProps) {
   // Load saved state from localStorage
-  const [answers, setAnswers] = useState<Record<string, any>>(() => {
+  const [answers, setAnswers] = useState<Record<string, AnswerValue>>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('ai-adoption-answers');
       return saved ? JSON.parse(saved) : {};
@@ -42,7 +42,7 @@ export function Quiz({ onComplete }: QuizProps) {
   const currentQuestion = availableQuestions[currentQuestionIndex];
   const progress = ((currentQuestionIndex + 1) / availableQuestions.length) * 100;
 
-  const handleAnswer = (value: any, autoAdvance: boolean = false) => {
+  const handleAnswer = (value: AnswerValue, autoAdvance: boolean = false) => {
     const newAnswers = {
       ...answers,
       [currentQuestion.id]: value

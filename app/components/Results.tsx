@@ -3,7 +3,7 @@
 import { Result } from '@/app/lib/types';
 import { archetypeProfiles } from '@/app/lib/scoring';
 import { Button } from './ui/button';
-import { Share2, Twitter, Linkedin, Mail, RotateCcw, CheckCircle2, Shield } from 'lucide-react';
+import { Twitter, Linkedin, Mail, RotateCcw, CheckCircle2, Shield } from 'lucide-react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import { createClient } from '@/app/lib/supabase/client';
 import { useState, useEffect } from 'react';
@@ -16,14 +16,17 @@ interface ResultsProps {
 export function Results({ result, onRestart }: ResultsProps) {
   const [isVerified, setIsVerified] = useState(false);
   const [realPercentile, setRealPercentile] = useState(result.percentile);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [stats, setStats] = useState<any>(null);
+  const [stats, setStats] = useState<{
+    totalVerified: number;
+    averageScore: number;
+    archetypeCounts: Record<string, number>;
+    scoreDistribution: number[];
+  } | null>(null);
   const supabase = createClient();
 
   // Submit results and get real percentile
   useEffect(() => {
     async function submitResults() {
-      setIsSubmitting(true);
       try {
         const response = await fetch('/api/results', {
           method: 'POST',
@@ -44,8 +47,6 @@ export function Results({ result, onRestart }: ResultsProps) {
         setIsVerified(data.isVerified || false);
       } catch (error) {
         console.error('Failed to submit results:', error);
-      } finally {
-        setIsSubmitting(false);
       }
     }
     
@@ -127,7 +128,7 @@ export function Results({ result, onRestart }: ResultsProps) {
                 ) : (
                   <span>
                     Top {100 - realPercentile}% of AI users
-                    {stats?.totalVerified > 0 && (
+                    {stats && stats.totalVerified > 0 && (
                       <span className="text-sm block mt-1">
                         Based on {stats.totalVerified} verified users
                       </span>
@@ -170,7 +171,7 @@ export function Results({ result, onRestart }: ResultsProps) {
                 </h3>
                 <p className="text-gray-700 mb-4">
                   Get a more accurate percentile ranking and help improve the data for everyone! 
-                  {stats?.totalVerified > 0 && (
+                  {stats && stats.totalVerified > 0 && (
                     <span className="block mt-2 text-sm text-gray-600">
                       Join {stats.totalVerified} verified users contributing to better AI adoption insights.
                     </span>
@@ -201,7 +202,7 @@ export function Results({ result, onRestart }: ResultsProps) {
                   </Button>
                 </div>
                 <p className="text-xs text-gray-500 mt-3">
-                  We only use your account to verify you're a real person. Your data remains anonymous in our statistics.
+                  We only use your account to verify you&apos;re a real person. Your data remains anonymous in our statistics.
                 </p>
               </div>
             </div>

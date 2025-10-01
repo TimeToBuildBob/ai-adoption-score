@@ -1,4 +1,4 @@
-import { Answer, CategoryScore, Result, Archetype, ArchetypeProfile } from './types';
+import { CategoryScore, Result, Archetype, ArchetypeProfile, AnswerValue } from './types';
 import { questions } from './questions';
 
 export const archetypeProfiles: Record<Archetype, ArchetypeProfile> = {
@@ -89,7 +89,7 @@ export const archetypeProfiles: Record<Archetype, ArchetypeProfile> = {
   }
 };
 
-function normalizeAnswer(questionId: string, value: any): number {
+function normalizeAnswer(questionId: string, value: AnswerValue): number {
   const question = questions.find(q => q.id === questionId);
   if (!question) return 0;
 
@@ -99,16 +99,16 @@ function normalizeAnswer(questionId: string, value: any): number {
     
     case 'slider':
       const max = question.max || 100;
-      return value / max;
+      return typeof value === 'number' ? value / max : 0;
     
     case 'scale':
       const scaleMax = question.max || 5;
-      return (value - 1) / (scaleMax - 1);
+      return typeof value === 'number' ? (value - 1) / (scaleMax - 1) : 0;
     
     case 'multiple':
       // Score based on option index (higher = more advanced/integrated)
       const options = question.options || [];
-      const index = options.indexOf(value);
+      const index = typeof value === 'string' ? options.indexOf(value) : -1;
       return index >= 0 ? index / (options.length - 1) : 0;
     
     default:
@@ -116,7 +116,7 @@ function normalizeAnswer(questionId: string, value: any): number {
   }
 }
 
-function calculateCategoryScores(answers: Record<string, any>): CategoryScore[] {
+function calculateCategoryScores(answers: Record<string, AnswerValue>): CategoryScore[] {
   const categories = ['habits', 'work', 'privacy', 'autonomy', 'sophistication', 'emotional', 'budget', 'philosophy'];
   
   return categories.map(category => {
@@ -154,11 +154,10 @@ function calculateCategoryScores(answers: Record<string, any>): CategoryScore[] 
 function determineArchetype(
   overallScore: number,
   categoryScores: CategoryScore[],
-  answers: Record<string, any>
+  answers: Record<string, AnswerValue>
 ): Archetype {
   const sophisticationScore = categoryScores.find(c => c.category === 'sophistication')?.percentage || 0;
   const autonomyScore = categoryScores.find(c => c.category === 'autonomy')?.percentage || 0;
-  const privacyScore = categoryScores.find(c => c.category === 'privacy')?.percentage || 0;
   const habitsScore = categoryScores.find(c => c.category === 'habits')?.percentage || 0;
   
   // AI Native: high sophistication + high autonomy + building
@@ -189,8 +188,7 @@ function determineArchetype(
 
 function generateRecommendations(
   archetype: Archetype,
-  categoryScores: CategoryScore[],
-  answers: Record<string, any>
+  categoryScores: CategoryScore[]
 ): string[] {
   const recommendations: string[] = [];
   
@@ -222,7 +220,7 @@ function generateRecommendations(
   return recommendations.slice(0, 5); // Top 5 recommendations
 }
 
-export function calculateResults(answers: Record<string, any>): Result {
+export function calculateResults(answers: Record<string, AnswerValue>): Result {
   const categoryScores = calculateCategoryScores(answers);
   
   // Calculate overall score (weighted average of categories)
@@ -234,7 +232,7 @@ export function calculateResults(answers: Record<string, any>): Result {
   const archetype = determineArchetype(overallScore, categoryScores, answers);
   
   // Generate recommendations
-  const recommendations = generateRecommendations(archetype, categoryScores, answers);
+  const recommendations = generateRecommendations(archetype, categoryScores);
   
   // Calculate percentile (mock for now - in production, compare to real data)
   const percentile = Math.min(99, Math.max(1, Math.round(overallScore)));
