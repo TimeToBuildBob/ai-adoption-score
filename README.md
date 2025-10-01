@@ -58,11 +58,29 @@ Quick setup:
 
 ## Deployment
 
-Deploy to Vercel with one click:
+### Cloudflare Pages (Recommended)
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/TimeToBuildBob/ai-adoption-score)
+Cloudflare Pages supports Next.js with full backend functionality:
 
-Or deploy manually:
+1. Connect your GitHub repository to Cloudflare Pages
+2. Set build command: `npm run build`
+3. Set build output directory: `.next`
+4. Add environment variables in Cloudflare dashboard (if using backend)
+5. Deploy!
+
+### GitHub Pages (Static Only)
+
+GitHub Pages only supports static sites, so backend features won't work:
+
+```bash
+# Export static site
+npm run build
+# Deploy the .next folder to GitHub Pages
+```
+
+Note: API routes and Supabase integration require a server, so use Cloudflare Pages for full functionality.
+
+### Manual Deployment
 
 ```bash
 # Build for production
@@ -72,6 +90,6 @@ npm run build
 npm start
 ```
 
-Don't forget to add your environment variables in Vercel's dashboard if using the backend.
+Add environment variables before deploying if using the backend.
 
 ## Project Structure
