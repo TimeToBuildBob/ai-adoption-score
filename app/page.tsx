@@ -15,11 +15,24 @@ export default function Home() {
   const [result, setResult] = useState<Result | null>(null);
   const [hasSavedProgress, setHasSavedProgress] = useState(false);
 
-  // Check for saved progress on mount
+  // Check for saved progress or results on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedAnswers = localStorage.getItem('ai-adoption-answers');
-      setHasSavedProgress(!!savedAnswers);
+      const savedResults = localStorage.getItem('ai-adoption-results');
+      
+      if (savedResults) {
+        // Show previous results
+        try {
+          const parsedResults = JSON.parse(savedResults);
+          setResult(parsedResults);
+          setState('results');
+        } catch (error) {
+          console.error('Failed to parse saved results:', error);
+        }
+      } else if (savedAnswers) {
+        setHasSavedProgress(true);
+      }
     }
   }, []);
 
@@ -31,6 +44,8 @@ export default function Home() {
     const calculatedResult = calculateResults(answers);
     setResult(calculatedResult);
     setState('results');
+    // Save results to localStorage
+    localStorage.setItem('ai-adoption-results', JSON.stringify(calculatedResult));
     // Clear quiz progress from localStorage
     localStorage.removeItem('ai-adoption-answers');
     localStorage.removeItem('ai-adoption-progress');
@@ -39,9 +54,10 @@ export default function Home() {
   const handleRestart = () => {
     setResult(null);
     setState('landing');
-    // Clear saved state
+    // Clear all saved state including results
     localStorage.removeItem('ai-adoption-answers');
     localStorage.removeItem('ai-adoption-progress');
+    localStorage.removeItem('ai-adoption-results');
   };
 
   if (state === 'quiz') {
