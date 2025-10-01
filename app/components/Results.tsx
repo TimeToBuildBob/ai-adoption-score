@@ -6,6 +6,7 @@ import { Button } from './ui/button';
 import { Twitter, Linkedin, Mail, RotateCcw, CheckCircle2, Shield } from 'lucide-react';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer } from 'recharts';
 import { createClient } from '@/app/lib/supabase/client';
+import { isSupabaseConfigured } from '@/app/lib/supabase/config';
 import { useState, useEffect } from 'react';
 
 interface ResultsProps {
@@ -27,6 +28,11 @@ export function Results({ result, onRestart }: ResultsProps) {
   // Submit results and get real percentile
   useEffect(() => {
     async function submitResults() {
+      // Check if Supabase is configured
+      if (!isSupabaseConfigured()) {
+        return; // Skip backend submission if Supabase not configured
+      }
+      
       try {
         const response = await fetch('/api/results', {
           method: 'POST',
@@ -51,6 +57,11 @@ export function Results({ result, onRestart }: ResultsProps) {
     }
     
     async function fetchStats() {
+      // Check if Supabase is configured
+      if (!isSupabaseConfigured()) {
+        return; // Skip stats fetching if Supabase not configured
+      }
+      
       try {
         const response = await fetch('/api/stats');
         const data = await response.json();
@@ -128,11 +139,15 @@ export function Results({ result, onRestart }: ResultsProps) {
                 ) : (
                   <span>
                     Top {100 - realPercentile}% of AI users
-                    {stats && stats.totalVerified > 0 && (
+                    {stats && stats.totalVerified > 0 ? (
                       <span className="text-sm block mt-1">
                         Based on {stats.totalVerified} verified users
                       </span>
-                    )}
+                    ) : !isSupabaseConfigured() ? (
+                      <span className="text-sm block mt-1 text-gray-500">
+                        Estimated percentile (enable backend for real rankings)
+                      </span>
+                    ) : null}
                   </span>
                 )}
               </p>
@@ -161,7 +176,7 @@ export function Results({ result, onRestart }: ResultsProps) {
         </div>
 
         {/* Verification Section */}
-        {!isVerified && (
+        {!isVerified && isSupabaseConfigured() && (
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl shadow-xl p-8">
             <div className="flex items-start gap-4">
               <Shield className="w-8 h-8 text-green-600 flex-shrink-0 mt-1" />
