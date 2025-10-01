@@ -23,7 +23,6 @@ export function Results({ result, onRestart }: ResultsProps) {
     archetypeCounts: Record<string, number>;
     scoreDistribution: number[];
   } | null>(null);
-  const supabase = createClient();
 
   // Submit results and get real percentile
   useEffect(() => {
@@ -76,7 +75,13 @@ export function Results({ result, onRestart }: ResultsProps) {
   }, [result]);
 
   async function handleAuth(provider: 'google' | 'github') {
+    if (!isSupabaseConfigured()) {
+      console.error('Cannot authenticate: Supabase is not configured');
+      return;
+    }
+    
     try {
+      const supabase = createClient();
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
