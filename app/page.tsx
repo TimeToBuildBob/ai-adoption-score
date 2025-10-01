@@ -1,103 +1,200 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Quiz } from './components/Quiz';
+import { Results } from './components/Results';
+import { Button } from './components/ui/button';
+import { calculateResults } from './lib/scoring';
+import { Result } from './lib/types';
+import { Brain, Zap, Users, TrendingUp } from 'lucide-react';
+
+type AppState = 'landing' | 'quiz' | 'results';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [state, setState] = useState<AppState>('landing');
+  const [result, setResult] = useState<Result | null>(null);
+  const [hasSavedProgress, setHasSavedProgress] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Check for saved progress on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedAnswers = localStorage.getItem('ai-adoption-answers');
+      setHasSavedProgress(!!savedAnswers);
+    }
+  }, []);
+
+  const handleStart = () => {
+    setState('quiz');
+  };
+
+  const handleComplete = (answers: Record<string, any>) => {
+    const calculatedResult = calculateResults(answers);
+    setResult(calculatedResult);
+    setState('results');
+    // Clear quiz progress from localStorage
+    localStorage.removeItem('ai-adoption-answers');
+    localStorage.removeItem('ai-adoption-progress');
+  };
+
+  const handleRestart = () => {
+    setResult(null);
+    setState('landing');
+    // Clear saved state
+    localStorage.removeItem('ai-adoption-answers');
+    localStorage.removeItem('ai-adoption-progress');
+  };
+
+  if (state === 'quiz') {
+    return <Quiz onComplete={handleComplete} />;
+  }
+
+  if (state === 'results' && result) {
+    return <Results result={result} onRestart={handleRestart} />;
+  }
+
+  // Landing page
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Hero Section */}
+      <div className="container mx-auto px-4 py-16">
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          <div className="space-y-4">
+            <h1 className="text-6xl font-bold text-gray-900 tracking-tight">
+              What's Your AI Adoption Score?
+            </h1>
+            <p className="text-2xl text-gray-600">
+              Discover how deeply you've integrated AI into your life and work
+            </p>
+          </div>
+
+          <div className="flex justify-center gap-4 pt-4">
+            {hasSavedProgress ? (
+              <>
+                <Button
+                  size="lg"
+                  onClick={handleStart}
+                  className="text-xl px-12 py-6 h-auto"
+                >
+                  Resume Assessment
+                </Button>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  onClick={handleRestart}
+                  className="text-xl px-12 py-6 h-auto"
+                >
+                  Start Over
+                </Button>
+              </>
+            ) : (
+              <Button
+                size="lg"
+                onClick={handleStart}
+                className="text-xl px-12 py-6 h-auto"
+              >
+                Start Assessment
+              </Button>
+            )}
+          </div>
+
+          <p className="text-gray-500">5-7 minutes • Free • No signup required</p>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+        {/* Features */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto mt-20">
+          <div className="bg-white rounded-xl p-6 shadow-lg">
+            <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
+              <Brain className="w-6 h-6 text-blue-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Adaptive Questions
+            </h3>
+            <p className="text-gray-600">
+              Questions adapt based on your answers for personalized insights
+            </p>
+          </div>
+
+          <div className="bg-white rounded-xl p-6 shadow-lg">
+            <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mb-4">
+              <TrendingUp className="w-6 h-6 text-indigo-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Detailed Breakdown
+            </h3>
+            <p className="text-gray-600">
+              See how you score across privacy, autonomy, and sophistication
+            </p>
+          </div>
+
+          <div className="bg-white rounded-xl p-6 shadow-lg">
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-4">
+              <Users className="w-6 h-6 text-purple-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Compare Yourself
+            </h3>
+            <p className="text-gray-600">
+              Find out how you rank compared to other AI users
+            </p>
+          </div>
+
+          <div className="bg-white rounded-xl p-6 shadow-lg">
+            <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-4">
+              <Zap className="w-6 h-6 text-pink-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Growth Recommendations
+            </h3>
+            <p className="text-gray-600">
+              Get personalized advice on how to level up your AI game
+            </p>
+          </div>
+        </div>
+
+        {/* Example Results Preview */}
+        <div className="max-w-3xl mx-auto mt-20 bg-white rounded-2xl shadow-xl p-8">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+            Discover Your AI Archetype
+          </h2>
+          <div className="grid md:grid-cols-3 gap-4">
+            <div className="text-center p-4 border-2 border-blue-200 rounded-lg hover:border-blue-400 transition-colors">
+              <div className="text-3xl mb-2">🚀</div>
+              <h3 className="font-semibold text-gray-900">AI Native</h3>
+              <p className="text-sm text-gray-600 mt-1">Building the future</p>
+            </div>
+            <div className="text-center p-4 border-2 border-blue-200 rounded-lg hover:border-blue-400 transition-colors">
+              <div className="text-3xl mb-2">⚡</div>
+              <h3 className="font-semibold text-gray-900">Power User</h3>
+              <p className="text-sm text-gray-600 mt-1">Maximizing productivity</p>
+            </div>
+            <div className="text-center p-4 border-2 border-blue-200 rounded-lg hover:border-blue-400 transition-colors">
+              <div className="text-3xl mb-2">🎯</div>
+              <h3 className="font-semibold text-gray-900">Pragmatic Adopter</h3>
+              <p className="text-sm text-gray-600 mt-1">Strategic integration</p>
+            </div>
+          </div>
+          <div className="text-center mt-6">
+            <Button onClick={handleStart}>
+              Find Your Archetype
+            </Button>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="text-center mt-20 text-gray-600">
+          <p>
+            Built with ❤️ by the team at{' '}
+            <a 
+              href="https://gptme.ai" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-700 font-semibold"
+            >
+              gptme.ai
+            </a>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }
